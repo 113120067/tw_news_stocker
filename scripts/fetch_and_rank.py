@@ -16,11 +16,11 @@ import pandas as pd
 from bs4 import BeautifulSoup
 from flashtext import KeywordProcessor
 
-from scripts.company_sources import fetch_companies, normalize_name
-from scripts.keywords import POS_KWS, NEG_KWS, NEGATION_HINTS, SENT_SPLIT
-from scripts.utils_text import normalize_for_match, split_sentences
-from scripts.clause_parser import decompose_clauses, decompose_except_if
-from scripts.supply_loader import load_relations
+from company_sources import fetch_companies, normalize_name
+from keywords import POS_KWS, NEG_KWS, NEGATION_HINTS, SENT_SPLIT
+from utils_text import normalize_for_match, split_sentences
+from clause_parser import decompose_clauses, decompose_except_if
+from supply_loader import load_relations
 
 # ---------------- Config ----------------
 ROOT = Path(__file__).resolve().parents[1]
@@ -247,15 +247,26 @@ def main():
 
             per_company = {}
             details_all = []
+
             for sent in sent_list:
                 sc, det = score_sentence(sent, comp_kp, alias_to_codes, senti_kp)
-                for k,v in sc.items():
-                    per_company[k] = per_company.get(k, 0) + v
-                for d in det:
-            if "ctype" not in d:
-                d["ctype"] = meta.get("type","unknown") if isinstance(meta, dict) else "unknown"
-        details_all.extend(det)
 
+                # 聚合公司分數
+                for k, v in sc.items():
+                    per_company[k] = per_company.get(k, 0.0) + float(v)
+
+                # 累積逐句明細（容錯：det 可能為 None）
+                det = det or []
+                for d in det:
+                    # 若上游未填，補預設子句型態，避免使用未定義的 meta
+                    d.setdefault("ctype", "unknown")
+                    # 可選：確保每個明細至少有必要欄位
+                    d.setdefault("clause_w", 1.0)
+                    d.setdefault("neg_adj", 1.0)
+
+                details_all.extend(det)
+
+            # 單文檔上限截斷
             per_company = cap_scores(per_company, MAX_PER_ARTICLE_ABS)
             if not per_company:
                 continue

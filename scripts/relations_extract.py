@@ -89,7 +89,6 @@ def dep_path_len(text, a_span, b_span):
     return None
 
 def local_polarity(text, span_start, span_end, window=12):
-(text, span_start, span_end, window=12):
     left = max(0, span_start-window); right = min(len(text), span_end+window)
     seg = text[left:right]
     pos = any(w in seg for w in POS_WORDS); neg = any(w in seg for w in NEG_WORDS)
@@ -129,15 +128,15 @@ def extract_pairs(text, kp, alias2codes):
                 bonus = 1.0 + 0.1*(abs(polA) + abs(polB))
                 score = base * bonus
                 impact_subj = 1 if polA>0 else (-1 if polA<0 else 0)
-impact_obj  = 1 if polB>0 else (-1 if polB<0 else 0)
-# rule: in supplier_to_customer, subj=供應商、obj=客戶；正面常同向；負面亦常同向（供應拉貨/砍單）
-if reltype=="supplier_to_customer":
-    pass
-elif reltype=="customer_to_supplier":
-    # 客戶端正面（需求好）→ 對供應商通常也正面；負面亦然
-    if impact_obj!=0 and impact_subj==0:
-        impact_subj = impact_obj
-res.append({"subj": ca, "obj": cb, "rel": reltype, "score": score, "pol_subj": polA, "pol_obj": polB, "impact_subj": impact_subj, "impact_obj": impact_obj})
+                impact_obj  = 1 if polB>0 else (-1 if polB<0 else 0)
+                # rule: in supplier_to_customer, subj=供應商、obj=客戶；正面常同向；負面亦常同向（供應拉貨/砍單）
+                if reltype=="supplier_to_customer":
+                    pass
+                elif reltype=="customer_to_supplier":
+                    # 客戶端正面（需求好）→ 對供應商通常也正面；負面亦然
+                    if impact_obj!=0 and impact_subj==0:
+                        impact_subj = impact_obj
+                res.append({"subj": ca, "obj": cb, "rel": reltype, "score": score, "pol_subj": polA, "pol_obj": polB, "impact_subj": impact_subj, "impact_obj": impact_obj})
     return res
 
 

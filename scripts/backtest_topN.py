@@ -154,7 +154,6 @@ calib_cache = {}
 calib_last = {}
 
 def micro_cost_model(weights, prev_weights, prices, vols, adv, vol_20, gamma=0.5):
-(weights, prev_weights, price_series, volume_series, adv, vol_20, gamma=0.5):
     # Square-root impact on turnover; fall back handled by caller.
     tw = sum(abs(weights.get(k,0)-prev_weights.get(k,0)) for k in set(list(weights.keys())+list(prev_weights.keys())))
     if adv is None or vol_20 is None:
